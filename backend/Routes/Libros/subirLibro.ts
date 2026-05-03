@@ -1,6 +1,6 @@
 import e from "express";
 import type { Request, Response } from "express";
-import db from "../dbconnection";
+import db from "../../dbconnection.ts";
 
 const router = e.Router()
 
@@ -14,7 +14,7 @@ router.post("/libros", (req: Request, res: Response) => {
 
   db.run(
     `INSERT INTO libros (isbn, titulo, autor, editorial, tema, cantidad)
-     VALUES (?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?)`,
     [isbn ?? "", titulo, autor, editorial, tema, cantidad ?? 1],
     function (err) {
       if (err) {

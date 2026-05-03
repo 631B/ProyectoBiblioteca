@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import e from "express";
-import db from "../dbconnection";
+import db from "../../dbconnection.ts";
 
 const router = e.Router()
 
@@ -24,7 +24,7 @@ router.patch("/libros/:id", (req: Request, res: Response) => {
 
   values.push(id)
 
-  const query = `UPDATE libros SET ${fields.join(",")} WHERE id = ?`
+  const query = `UPDATE libros SET ${fields.join(", ")} WHERE id = ?`
 
   db.run(query, values, function(err) {
     if (err) {

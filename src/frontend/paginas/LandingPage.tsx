@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const API_URL = "http://192.168.150.158:3000"
+const API_URL = "http://192.168.0.100:3000";
 
 type Libro = {
   id: number;
@@ -37,6 +37,8 @@ export default function LandingPage() {
     const result = libros.filter((libro) => {
       if (filterType === "isbn") return libro.isbn?.toLowerCase().includes(term);
       if (filterType === "autor") return libro.autor?.toLowerCase().includes(term);
+      if (filterType === "editorial") return libro.editorial?.toLowerCase().includes(term);
+      if (filterType === "tema") return libro.tema?.toLowerCase().includes(term);
       return libro.titulo?.toLowerCase().includes(term);
     });
 
@@ -49,13 +51,15 @@ export default function LandingPage() {
     const titulo = prompt("Título:");
     const autor = prompt("Autor:");
     const editorial = prompt("Editorial");
-    const tema = prompt("tema");
-    const cantidad = Number(prompt("Cantidad:") || "1");
+    const tema = prompt("Tema");
+    const cantidadInput = prompt("Cantidad:");
 
     if (!titulo || !autor) {
-      alert("Falto titulo o autor, libro no subido")
+      alert("Faltó título o autor, libro no subido");
       return;
     }
+
+    const cantidad = cantidadInput ? Number(cantidadInput) : 1;
 
     const res = await fetch(`${API_URL}/libros`, {
       method: "POST",
@@ -84,13 +88,73 @@ export default function LandingPage() {
     setFiltered((prev) => prev.filter((l) => l.id !== id));
   };
 
-  // ✏️ UPDATE
+  // ✏️ UPDATE cantidad
   const updateCantidad = async (id: number, cantidad: number) => {
     await fetch(`${API_URL}/libros/${id}`, {
-      method: "PUT",
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ cantidad }),
     });
+  };
+
+  // ✏️ UPDATE ALL
+  const editLibro = async (libro: Libro) => {
+    const titulo = prompt("Título:", libro.titulo);
+    if (titulo === null) return;
+
+    const autor = prompt("Autor:", libro.autor);
+    if (autor === null) return;
+
+    const isbn = prompt("ISBN:", libro.isbn);
+    if (isbn === null) return;
+
+    const editorial = prompt("Editorial:", libro.editorial);
+    if (editorial === null) return;
+
+    const tema = prompt("Tema:", libro.tema);
+    if (tema === null) return;
+
+    const cantidadInput = prompt("Cantidad:", String(libro.cantidad));
+    if (cantidadInput === null) return;
+
+    const cantidad = Number(cantidadInput);
+    if (isNaN(cantidad)) {
+      alert("Cantidad inválida");
+      return;
+    }
+
+    const updates: Partial<Libro> = {};
+
+    if (titulo !== libro.titulo) updates.titulo = titulo;
+    if (autor !== libro.autor) updates.autor = autor;
+    if (isbn !== libro.isbn) updates.isbn = isbn;
+    if (editorial !== libro.editorial) updates.editorial = editorial;
+    if (tema !== libro.tema) updates.tema = tema;
+    if (cantidad !== libro.cantidad) updates.cantidad = cantidad;
+
+    if (Object.keys(updates).length === 0) return;
+
+    const res = await fetch(`${API_URL}/libros/${libro.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setLibros((prev) =>
+        prev.map((l) =>
+          l.id === libro.id ? { ...l, ...updates } : l
+        )
+      );
+
+      setFiltered((prev) =>
+        prev.map((l) =>
+          l.id === libro.id ? { ...l, ...updates } : l
+        )
+      );
+    }
   };
 
   return (
@@ -148,7 +212,15 @@ export default function LandingPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              {/* EDIT */}
+              {/* EDIT ALL */}
+              <button
+                onClick={() => editLibro(libro)}
+                className="bg-yellow-500 text-white px-2 py-1 rounded"
+              >
+                Edit
+              </button>
+
+              {/* EDIT cantidad */}
               <input
                 type="number"
                 value={libro.cantidad ?? 0}
@@ -173,7 +245,7 @@ export default function LandingPage() {
                 className="w-20 border rounded p-1 text-center"
               />
 
-              {/* DELETE ✅ NOW WORKS */}
+              {/* DELETE */}
               <button
                 onClick={() => deleteLibro(libro.id)}
                 className="bg-red-500 text-white px-2 py-1 rounded"
