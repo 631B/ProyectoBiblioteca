@@ -7,6 +7,8 @@ type Libro = {
   isbn: string;
   titulo: string;
   autor: string;
+  editorial: string;
+  tema: string;
   cantidad: number;
 };
 
@@ -43,17 +45,22 @@ export default function LandingPage() {
 
   // ➕ ADD
   const addLibro = async () => {
+    const isbn = prompt("ISBN:");
     const titulo = prompt("Título:");
     const autor = prompt("Autor:");
-    const isbn = prompt("ISBN:");
+    const editorial = prompt("Editorial");
+    const tema = prompt("tema");
     const cantidad = Number(prompt("Cantidad:") || "1");
 
-    if (!titulo || !autor) return;
+    if (!titulo || !autor) {
+      alert("Falto titulo o autor, libro no subido")
+      return;
+    }
 
     const res = await fetch(`${API_URL}/libros`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ titulo, autor, isbn, cantidad }),
+      body: JSON.stringify({ titulo, autor, isbn, cantidad, editorial, tema }),
     });
 
     const data = await res.json();
@@ -113,9 +120,11 @@ export default function LandingPage() {
           onChange={(e) => setFilterType(e.target.value)}
           className="p-2 border rounded"
         >
+          <option value="isbn">ISBN</option>
           <option value="titulo">Título</option>
           <option value="autor">Autor</option>
-          <option value="isbn">ISBN</option>
+          <option value="editorial">Editorial</option>
+          <option value="tema">Tema</option>
         </select>
       </div>
 
@@ -133,6 +142,8 @@ export default function LandingPage() {
             <div>
               <p className="font-semibold">{libro.titulo}</p>
               <p className="text-sm text-gray-500">{libro.autor}</p>
+              <p className="text-sm text-gray-500">{libro.editorial}</p>
+              <p className="text-sm text-gray-500">{libro.tema}</p>
               <p className="text-xs text-gray-400">ISBN: {libro.isbn}</p>
             </div>
 
